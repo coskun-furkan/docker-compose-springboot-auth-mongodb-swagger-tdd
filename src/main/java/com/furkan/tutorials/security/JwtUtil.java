@@ -9,30 +9,51 @@ import java.security.Key;
 import java.util.Date;
 
 import com.furkan.tutorials.model.User;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
-import static io.jsonwebtoken.Jwts.*;
-
-
+@Component
 public class JwtUtil {
 
-    private static final String SECRET = "çokGizliAnahtar1234567890123456"; // En az 32 karakter olmalı
-    private static final Key SECRET_KEY = Keys.hmacShaKeyFor(SECRET.getBytes());
+    private final Key secretKey;
 
-    public static String generateToken(User user) {
-        return builder()
+    public JwtUtil(@Value("${jwt.secret}") String secret) {
+        this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
+    }
+
+    public String generateToken(User user) {
+        return Jwts.builder()
                 .setSubject(user.getUsername())
                 .claim("role", user.getRole())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 gün
-                .signWith(SECRET_KEY, SignatureAlgorithm.HS256)
+                .signWith(secretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public static Claims getClaims(String token) {
+    public Claims getClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(SECRET_KEY)
+                .setSigningKey(secretKey)
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
     }
+
+    public String extractUsername(String token) {
+        return getClaims(token).getSubject();
+    }
+
+    public String extractRole(String token) {
+        return getClaims(token).get("role", String.class);
+    }
+
+    public boolean validateToken(String token, String expectedUsername) {
+        final String username = extractUsername(token);
+        return (username.equals(expectedUsername) && !isTokenExpired(token));
+    }
+
+    private boolean isTokenExpired(String token) {
+        return getClaims(token).getExpiration().before(new Date());
+    }
 }
+

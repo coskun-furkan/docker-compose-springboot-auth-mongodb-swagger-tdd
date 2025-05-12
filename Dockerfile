@@ -1,12 +1,17 @@
-FROM openjdk:23-jdk-slim
+# Base image
+FROM eclipse-temurin:23-jdk-alpine
 
-ENV APP_HOME=/app
-WORKDIR $APP_HOME
+# Uygulama klasörünü oluştur
+WORKDIR /app
 
-COPY target/tutorials-0.0.1-SNAPSHOT.jar app.jar
+# Bağımlılıkları ve kaynakları kopyala
+COPY target/*.jar app.jar
 
+# Port tanımı
 EXPOSE 8080
-EXPOSE 27017
 
+# Çalıştırma komutu
 ENTRYPOINT ["java", "-jar", "app.jar"]
+
+
 

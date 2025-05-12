@@ -6,6 +6,7 @@ import com.furkan.tutorials.service.TutorialService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -37,11 +38,13 @@ public class TutorialController {
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<ApiResponse<Tutorial>> create(@RequestBody Tutorial tutorial) {
         Tutorial saved = tutorialService.create(tutorial);
         return ResponseEntity.ok(ApiResponse.success("Tutorial başarıyla oluşturuldu", saved));
     }
+
 
 
     @PutMapping("/{id}")

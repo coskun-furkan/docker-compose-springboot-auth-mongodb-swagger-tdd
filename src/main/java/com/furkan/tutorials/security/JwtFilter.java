@@ -1,11 +1,13 @@
 package com.furkan.tutorials.security;
 
+import com.furkan.tutorials.service.TokenBlacklistService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -16,6 +18,14 @@ import java.util.List;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
+    private final TokenBlacklistService tokenBlacklistService;
+    private final JwtUtil jwtUtil;
+
+    @Autowired
+    public JwtFilter(TokenBlacklistService tokenBlacklistService, JwtUtil jwtUtil) {
+        this.tokenBlacklistService = tokenBlacklistService;
+        this.jwtUtil = jwtUtil;
+    }
 
     private static final List<String> WHITELIST = List.of(
             "/api/auth/register",
@@ -35,22 +45,36 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        // Whitelist kontrolü
         if (WHITELIST.stream().anyMatch(path::startsWith)) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        String token = request.getHeader("Authorization");
+        String authHeader = request.getHeader("Authorization");
 
-        if (token != null && token.startsWith("Bearer ")) {
-            String jwt = token.substring(7);
-            String username = JwtUtil.getClaims(jwt).getSubject();
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String jwt = authHeader.substring(7);
 
-            UsernamePasswordAuthenticationToken auth =
-                    new UsernamePasswordAuthenticationToken(username, null, Collections.emptyList());
+            if (tokenBlacklistService.isBlacklisted(jwt)) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("Bu token geçersiz (blacklist). Lütfen tekrar giriş yapın.");
+                return;
+            }
 
-            SecurityContextHolder.getContext().setAuthentication(auth);
+            try {
+                String username = jwtUtil.extractUsername(jwt);
+                String role = jwtUtil.extractRole(jwt);
+
+                SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + role);
+                UsernamePasswordAuthenticationToken auth =
+                        new UsernamePasswordAuthenticationToken(username, null, Collections.singleton(authority));
+
+                SecurityContextHolder.getContext().setAuthentication(auth);
+
+            } catch (Exception e) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
         }
 
         filterChain.doFilter(request, response);

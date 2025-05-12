@@ -1,22 +1,35 @@
 version: "3.8"
 
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - mongo
+    networks:
+      - spring_network
+
   mongo:
-    image: mongo:6
-    container_name: mongo
+    image: mongo:7.0
+    container_name: mongodb_container
     ports:
       - "27017:27017"
     volumes:
-      - mongo-data:/data/db
-
-  app:
-    build: .
-    container_name: springboot-app
-    ports:
-      - "8080:8080"
-    depends_on:
-      - mongo
+      - mongo_data:/data/db
+    networks:
+      - spring_network
 
 volumes:
-  mongo-data:
+  mongo_data:
+
+networks:
+  spring_network:
+    driver: bridge
+
 
