@@ -22,6 +22,61 @@ This project provides:
 
 The service layer has been covered with unit tests written in JUnit and Mockito. I tried to follow a test-driven approach especially around authentication logic. It helped me think more clearly and keep the implementation focused.
 
+# Folder Structure
+
+```
+src
+├── main
+│   ├── java
+│   │   └── com.furkan.tutorials
+│   │       ├── controller
+│   │       │   ├── AuthController.java
+│   │       │   └── TutorialController.java
+│   │       ├── dto
+│   │       │   ├── ApiResponse.java
+│   │       │   ├── LoginResponse.java
+│   │       │   └── RegisterRequest.java
+│   │       ├── exception
+│   │       │   └── GlobalExceptionHandler.java
+│   │       ├── model
+│   │       │   ├── User.java
+│   │       │   ├── Tutorial.java
+│   │       │   └── RefreshToken.java
+│   │       ├── repository
+│   │       │   ├── UserRepository.java
+│   │       │   ├── TutorialRepository.java
+│   │       │   └── RefreshTokenRepository.java
+│   │       ├── security
+│   │       │   ├── JwtFilter.java
+│   │       │   ├── JwtUtil.java
+│   │       │   └── SecurityConfig.java
+│   │       ├── service
+│   │       │   ├── AuthService.java
+│   │       │   ├── AuthServiceImpl.java
+│   │       │   ├── RefreshTokenService.java
+│   │       │   ├── RefreshTokenServiceImpl.java
+│   │       │   ├── TokenBlacklistService.java
+│   │       │   ├── TokenBlacklistServiceImpl.java
+│   │       │   ├── TutorialService.java
+│   │       │   └── TutorialServiceImpl.java
+│   │       └── TutorialsApplication.java
+│   └── resources
+│       ├── application.properties
+│       └── static (if needed)
+├── test
+│   └── java
+│       └── com.furkan.tutorials
+│           └── service
+│               ├── AuthServiceImplTest.java
+│               ├── RefreshTokenServiceTest.java
+│               └── TutorialServiceTest.java
+.env
+docker-compose.yml
+README.md
+.gitignore
+```
+
+
 # How to Run
 
 To run the application with Docker, use the following command:
