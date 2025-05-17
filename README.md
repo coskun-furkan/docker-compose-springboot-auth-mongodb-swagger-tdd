@@ -1,4 +1,4 @@
-# Secure Spring Boot API
+# Docker Compose SpringBoot Auth MongoDB Swagger TDD
 
 Hi, I'm Furkan. This is a backend project I created to better understand how authentication works using Java and Spring Boot.
 
